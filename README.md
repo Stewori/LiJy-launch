@@ -1,6 +1,5 @@
 # LiJy-launch
 Lightweight multiplatform Jython-launcher
-=========================================
 
 Why write another Jython-launcher?
 ==================================

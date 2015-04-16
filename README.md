@@ -1,8 +1,10 @@
-# LiJy-launch
+LiJy-launch
+===========
+
 Lightweight multiplatform Jython-launcher
 
 Why write another Jython-launcher?
-==================================
+----------------------------------
 
 The current situation is as follows:
 On linux the Jython-launcher is a hard to read and vastly unmaintainable sh-script, that is even said to be buggy.
@@ -13,6 +15,6 @@ Another downside of this solution is that on Windows a process cannot replace it
 
 
 How it works
-============
+------------
 
 This project is a sandbox for creating a new lightweight Jython launcher based on JNI (similar to java.exe). We will combine the sources of java.exe and CPython-launcher to produce a platform-independent launcher-source that will provide elegant and lightweight binary Jython launchers for Linux, Windows, OSX and other target platforms.

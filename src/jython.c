@@ -22,15 +22,10 @@
  * The result tells whether the caller is responsible to free memory
  * of argsDest.
  */
-jboolean decode_args(int argc, char** args, int* argcDest, char*** argsDest)
+void getJAVA_OPTS(int* argcDest, char*** argsDest)
 {
 	char* opts = getenv("JAVA_OPTS");
-	if (!opts)
-	{
-		*argcDest = argc;
-		*argsDest = args;
-		return JNI_FALSE;
-	}
+	if (!opts) return;
 //	puts("decode_args found opts:");
 //	puts(opts);
 	char* tmp = opts;
@@ -83,7 +78,6 @@ jboolean decode_args(int argc, char** args, int* argcDest, char*** argsDest)
 //		puts("---");
 //		puts(result[i]);
 //	}
-	return JNI_TRUE;
 }
 
 /* The caller is responsible to free the resulting pointer
@@ -869,9 +863,9 @@ int Jython_Main(int argc, char ** argv,         /* main argc, argc */
 	{
 		int argc2;
 		char** args2 = NULL;
-		jboolean freeArgs = decode_args(argc, argv, &argc2, &args2);
+		getJAVA_OPTS(&argc2, &args2);
 		setup = parse_launcher_args(argc, argv, argc2, args2);
-		if (freeArgs) free(args2);
+		if (args2) free(args2);
 	}
 	//printSetup(setup);
 //	if (setup->print_requested) {

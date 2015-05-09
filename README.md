@@ -20,3 +20,22 @@ How it works
 ------------
 
 This project is a sandbox for creating a new lightweight Jython launcher based on JNI (similar to java.exe). We will combine the sources of java.exe and CPython-launcher to produce a platform-independent launcher-source that will provide elegant and lightweight binary Jython launchers for Linux, Windows, OSX and other target platforms.
+
+
+Current state
+-------------
+
+The launcher was not extensively tested yet, but supports almost all options and environment variables that jython.py supports. It is currently Linux-only, but a Windows-version is the next major goal. It has only been tested with Open JDK.
+
+
+License
+-------
+
+As LiJy-launch inherits some code from the original Open JDK Java-launcher, it is released under the same license as Open JDK, which is GPL v2 with classpath exception. See the file LICENSE for details.
+
+
+Contact
+-------
+
+For now write to stefan.richthofer@jyni.org.
+

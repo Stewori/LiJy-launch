@@ -69,8 +69,8 @@ typedef struct JDK1_1InitArgs {
 #include "java_md.h"
 #include "jli_util.h"
 
-#include "manifest_info.h"
-#include "version_comp.h"
+//#include "manifest_info.h"
+//#include "version_comp.h"
 #include "wildcard.h"
 
 # define KB (1024UL)

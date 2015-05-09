@@ -33,8 +33,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include "manifest_info.h"
-#include "version_comp.h"
+//#include "manifest_info.h"
+//#include "version_comp.h"
 #include "wildcard.h"
 
 

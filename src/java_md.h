@@ -12,7 +12,7 @@
 #include <limits.h>
 #include <unistd.h>
 #include <sys/param.h>
-#include "manifest_info.h"
+//#include "manifest_info.h"
 #include "jli_util.h"
 
 #define PATH_SEPARATOR          ':'

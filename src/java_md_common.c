@@ -224,53 +224,53 @@ CheckSanity(char *path, char *dir)
  *	  former names are legacy on Linux, they must be recognized for
  *	  all time.  Fortunately, this is a minor cost.
  */
-static char
-*ProcessDir(manifest_info *info, char *dirname)
-{
-	DIR	 *dirp;
-	struct dirent *dp;
-	char	*best = NULL;
-	int	 offset;
-	int	 best_offset = 0;
-	char	*ret_str = NULL;
-	char	buffer[PATH_MAX];
-
-	if ((dirp = opendir(dirname)) == NULL)
-		return (NULL);
-
-	do {
-		if ((dp = readdir(dirp)) != NULL) {
-			offset = 0;
-			if ((JLI_StrNCmp(dp->d_name, "jre", 3) == 0) ||
-				(JLI_StrNCmp(dp->d_name, "jdk", 3) == 0))
-				offset = 3;
-			else if (JLI_StrNCmp(dp->d_name, "j2re", 4) == 0)
-				offset = 4;
-			else if (JLI_StrNCmp(dp->d_name, "j2sdk", 5) == 0)
-				offset = 5;
-			if (offset > 0) {
-				if ((JLI_AcceptableRelease(dp->d_name + offset,
-					info->jre_version)) && CheckSanity(dirname, dp->d_name))
-					if ((best == NULL) || (JLI_ExactVersionId(
-					  dp->d_name + offset, best + best_offset) > 0)) {
-						if (best != NULL)
-							JLI_MemFree(best);
-						best = JLI_StringDup(dp->d_name);
-						best_offset = offset;
-					}
-			}
-		}
-	} while (dp != NULL);
-	(void) closedir(dirp);
-	if (best == NULL)
-		return (NULL);
-	else {
-		ret_str = JLI_MemAlloc(JLI_StrLen(dirname) + JLI_StrLen(best) + 2);
-		sprintf(ret_str, "%s/%s", dirname, best);
-		JLI_MemFree(best);
-		return (ret_str);
-	}
-}
+//static char
+//*ProcessDir(manifest_info *info, char *dirname)
+//{
+//	DIR	 *dirp;
+//	struct dirent *dp;
+//	char	*best = NULL;
+//	int	 offset;
+//	int	 best_offset = 0;
+//	char	*ret_str = NULL;
+//	char	buffer[PATH_MAX];
+//
+//	if ((dirp = opendir(dirname)) == NULL)
+//		return (NULL);
+//
+//	do {
+//		if ((dp = readdir(dirp)) != NULL) {
+//			offset = 0;
+//			if ((JLI_StrNCmp(dp->d_name, "jre", 3) == 0) ||
+//				(JLI_StrNCmp(dp->d_name, "jdk", 3) == 0))
+//				offset = 3;
+//			else if (JLI_StrNCmp(dp->d_name, "j2re", 4) == 0)
+//				offset = 4;
+//			else if (JLI_StrNCmp(dp->d_name, "j2sdk", 5) == 0)
+//				offset = 5;
+//			if (offset > 0) {
+//				if ((JLI_AcceptableRelease(dp->d_name + offset,
+//					info->jre_version)) && CheckSanity(dirname, dp->d_name))
+//					if ((best == NULL) || (JLI_ExactVersionId(
+//					  dp->d_name + offset, best + best_offset) > 0)) {
+//						if (best != NULL)
+//							JLI_MemFree(best);
+//						best = JLI_StringDup(dp->d_name);
+//						best_offset = offset;
+//					}
+//			}
+//		}
+//	} while (dp != NULL);
+//	(void) closedir(dirp);
+//	if (best == NULL)
+//		return (NULL);
+//	else {
+//		ret_str = JLI_MemAlloc(JLI_StrLen(dirname) + JLI_StrLen(best) + 2);
+//		sprintf(ret_str, "%s/%s", dirname, best);
+//		JLI_MemFree(best);
+//		return (ret_str);
+//	}
+//}
 
 /*
  *	  This is the global entry point. It examines the host for the optimal

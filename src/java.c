@@ -210,6 +210,11 @@ JLI_Launch(int argc, char ** argv,             /* main argc, argc */
 
 	AddOption(jysetup->mem, NULL);
 	AddOption(jysetup->stack, NULL);
+	for (i = 0; i < jysetup->javaCount; ++i)
+	{
+		AddOption(jysetup->java[i], NULL);
+	}
+
 	/*
 	 * Make sure the specified version of the JRE is running.
 	 *

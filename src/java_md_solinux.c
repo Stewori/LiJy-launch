@@ -33,8 +33,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
-//#include "manifest_info.h"
-//#include "version_comp.h"
 #include "wildcard.h"
 
 
@@ -814,28 +812,20 @@ GetJREPath(char *path, jint pathsize, const char * arch, jboolean speculative)
 {
     char libjava[MAXPATHLEN];
 
-//    if (GetApplicationHome(path, pathsize)) {
     if (GetJavaHome(path, pathsize)) {
         /* Is JRE co-located with the application? */
         JLI_Snprintf(libjava, sizeof(libjava), "%s/lib/%s/" JAVA_DLL, path, arch);
-//        puts(libjava);
-//        puts(path);
         if (access(libjava, F_OK) == 0) {
             JLI_TraceLauncher("JRE path is %s\n", path);
             return JNI_TRUE;
         }
-//        puts("JRE fail");
-
         /* Does the app ship a private JRE in <apphome>/jre directory? */
         JLI_Snprintf(libjava, sizeof(libjava), "%s/jre/lib/%s/" JAVA_DLL, path, arch);
-//        puts(libjava);
-//        puts(path);
         if (access(libjava, F_OK) == 0) {
             JLI_StrCat(path, "/jre");
             JLI_TraceLauncher("JRE path is %s\n", path);
             return JNI_TRUE;
         }
-//        puts("JRE fail");
     }
 
     if (!speculative)

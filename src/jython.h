@@ -97,7 +97,7 @@ typedef struct {
 	char* uname;
 } JySetup;
 
-JySetup* parse_launcher_args(int argc, char** args);
+JySetup* parse_launcher_args(int argc, char** args, int joptsc, char** jopts);
 void freeSetup(JySetup* setup);
 void printSetup(JySetup* js);
 void print_help();

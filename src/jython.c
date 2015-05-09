@@ -18,10 +18,78 @@
 #endif
 //is_windows = os.name == "nt" or (os.name == "java" and os._name == "nt")
 
+/*
+ * The result tells whether the caller is responsible to free memory
+ * of argsDest.
+ */
+jboolean decode_args(int argc, char** args, int* argcDest, char*** argsDest)
+{
+	char* opts = getenv("JAVA_OPTS");
+	if (!opts)
+	{
+		*argcDest = argc;
+		*argsDest = args;
+		return JNI_FALSE;
+	}
+//	puts("decode_args found opts:");
+//	puts(opts);
+	char* tmp = opts;
+	char** result = NULL;
+	int count = 0;
+	char* last_space = 0;
+	char delim[2];
+	delim[0] = ' ';
+	delim[1] = 0;
+
+	/* Count how many elements will be extracted. */
+	while (delim[0] == *tmp)
+	{
+		tmp++;
+	}
+	while (*tmp)
+	{
+		if (delim[0] == *tmp && delim[0] != *(tmp-1))
+		{
+			count++;
+			last_space = tmp;
+		}
+		tmp++;
+	}
+	if (count > 0 && delim[0] == *(tmp-1) && delim[0] == *(tmp-2))
+		count--;
+	/* Add space for trailing token. */
+	count += last_space < (opts + strlen(opts) - 1);
+	result = malloc(sizeof(char*) * (count));//+argc));
+	//result += 1;
+	if (result)
+	{
+		//result[0] = args[0];
+		int idx = 0;
+		char* token = strtok(opts, delim);
+		while (token)
+		{
+			*(result + idx++) = strdup(token);
+			token = strtok(0, delim);
+		}
+//		for (idx = 1; idx < argc; ++idx)
+//			result[count+idx] = args[idx];
+	}
+	*argcDest = count;//+argc;
+	*argsDest = result;
+//	int i;
+//	printf("%i\n", *argcDest);
+//	puts("JAVA opts:");
+//	for (i = 0; i < *argcDest; ++i) {
+//		puts("---");
+//		puts(result[i]);
+//	}
+	return JNI_TRUE;
+}
+
 /* The caller is responsible to free the resulting pointer
  * by calling freeSetup after using it.
  */
-JySetup* parse_launcher_args(int argc, char** args) {
+JySetup* parse_launcher_args(int argc, char** args, int joptsc, char** jopts) {
 	JySetup* result = malloc(sizeof(JySetup));
 	result->boot = JNI_FALSE;
 	result->jdb = JNI_FALSE;
@@ -50,7 +118,53 @@ JySetup* parse_launcher_args(int argc, char** args) {
 	int argOff = 1;
 	char* tmp[argc];
 	int tmpPos = 0;
+	char* jtmp[joptsc];
+	int jtmpPos = 0;
 	int i;
+//	def support_java_opts(args):
+//	    it = iter(args)
+//	    while it:
+//	        arg = next(it)
+//	        if arg.startswith("-D"):
+//	            yield arg
+//	        elif arg in ("-classpath", "-cp"):
+//	            yield "-J" + arg
+//	            try:
+//	                yield next(it)
+//	            except StopIteration:
+//	                bad_option("Argument expected for -classpath option in JAVA_OPTS")
+//	        else:
+//	            yield "-J" + arg
+	for (i = 0; i < joptsc; ++i) {
+		if (strncmp(jopts[i], "-D", 2) == 0) {
+			checkProperty(jopts[i], executableOpt, result->executableInArgs)
+			checkProperty(jopts[i], unameOpt, result->unameInArgs)
+			checkProperty(jopts[i], homeOpt, result->pythonHomeInArgs)
+			checkProperty(jopts[i], ttyOpt, result->ttyInArgs)
+			checkProperty(jopts[i], consoleOpt, result->consoleInArgs)
+			result->propCount++;
+			jtmp[jtmpPos++] = jopts[i];
+		} else if (strcmp(jopts[i], "-classpath") == 0
+				|| strcmp(jopts[i], "-cp") == 0) {
+			if (i+1 < joptsc) {
+				++i;
+			} else {
+				bad_option("Argument expected for -classpath option in JAVA_OPTS");
+			}
+			if (strncmp(jopts[i], "-", 1) == 0) {
+				bad_option("Bad option for -classpath in JAVA_OPTS");
+			} else {
+				setString(result, cp, jopts[i]);
+			}
+		} else if (strncmp(jopts[i], "-Xmx", 4) == 0) {
+			setString(result, mem, jopts[i]);
+		} else if (strncmp(jopts[i], "-Xss", 4) == 0) {
+			setString(result, stack, jopts[i]);
+		} else {
+			result->javaCount++;
+			jtmp[jtmpPos++] = jopts[i];
+		}
+	}
 	for (i = 1; i < argc; ++i) {
 		if (strncmp(args[i], "-D", 2) == 0) {
 			checkProperty(args[i], executableOpt, result->executableInArgs)
@@ -125,6 +239,16 @@ JySetup* parse_launcher_args(int argc, char** args) {
 	int javaPos = 0;
 	int propPos = 0;
 	int jythonPos = 0;
+	for (i = 0; i < jtmpPos; ++i) {
+		if (strncmp(jtmp[i], "-D", 2) == 0) {
+			setString0(result, properties[propPos], jtmp[i]);
+			propPos++;
+		}
+		else {
+			setString0(result, java[javaPos], jtmp[i]);
+			javaPos++;
+		}
+	}
 	for (i = 0; i < tmpPos; ++i) {
 		if (strncmp(tmp[i], "-D", 2) == 0) {
 //			char* v = strchr(tmp[i]+2, '=');
@@ -734,7 +858,6 @@ int Jython_Main(int argc, char ** argv,         /* main argc, argc */
         jint     ergo_class                     /* ergnomics policy */
 )
 {
-
 //	puts("Jython_Main\n");
 //	printf("Command line args:\n");
 //	int i;
@@ -742,7 +865,14 @@ int Jython_Main(int argc, char ** argv,         /* main argc, argc */
 //		printf("argv[%d] = %s\n", i, argv[i]);
 //	}
 //	puts("\n");
-	JySetup* setup = parse_launcher_args(argc, argv);
+	JySetup* setup;
+	{
+		int argc2;
+		char** args2 = NULL;
+		jboolean freeArgs = decode_args(argc, argv, &argc2, &args2);
+		setup = parse_launcher_args(argc, argv, argc2, args2);
+		if (freeArgs) free(args2);
+	}
 	//printSetup(setup);
 //	if (setup->print_requested) {
 //		puts("Error: --print is currently not supported by LiJy-launch.");

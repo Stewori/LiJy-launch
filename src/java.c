@@ -208,6 +208,15 @@ JLI_Launch(int argc, char ** argv,             /* main argc, argc */
 		AddOption("-Dsun.java.launcher.diag=true", NULL);
 	}
 
+	/*Add logic from "set_encoding"-method here:
+	if "JAVA_ENCODING" not in os.environ and self.uname == "darwin" and "file.encoding" not in self.args.properties:
+		self.args.properties["file.encoding"] = "UTF-8"
+	*/
+	if (!jysetup->file_encodingInArgs && getenv("JAVA_ENCODING") == NULL &&
+			strcmp(jysetup->uname, "darwin") == 0)
+	{
+		AddOption(defaultFile_encoding, NULL);
+	}
 	AddOption(jysetup->mem, NULL);
 	AddOption(jysetup->stack, NULL);
 	for (i = 0; i < jysetup->javaCount; ++i)

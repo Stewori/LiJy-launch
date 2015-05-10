@@ -19,13 +19,18 @@
 //is_windows = os.name == "nt" or (os.name == "java" and os._name == "nt")
 
 /*
- * The result tells whether the caller is responsible to free memory
- * of argsDest.
+ * The caller is responsible to free memory
+ * of argsDest, if it was returned non-NULL.
  */
-void getJAVA_OPTS(int* argcDest, char*** argsDest)
+void getOPTS(int* argcDest, char*** argsDest, char* envOpts)
 {
-	char* opts = getenv("JAVA_OPTS");
-	if (!opts) return;
+	char* opts = getenv(envOpts);
+	if (!opts || strlen(opts) == 0)
+	{
+		*argcDest = 0;
+		*argsDest = NULL;
+		return;
+	}
 //	puts("decode_args found opts:");
 //	puts(opts);
 	char* tmp = opts;
@@ -69,7 +74,7 @@ void getJAVA_OPTS(int* argcDest, char*** argsDest)
 //		for (idx = 1; idx < argc; ++idx)
 //			result[count+idx] = args[idx];
 	}
-	*argcDest = count;//+argc;
+	*argcDest = count;
 	*argsDest = result;
 //	int i;
 //	printf("%i\n", *argcDest);
@@ -83,7 +88,8 @@ void getJAVA_OPTS(int* argcDest, char*** argsDest)
 /* The caller is responsible to free the resulting pointer
  * by calling freeSetup after using it.
  */
-JySetup* parse_launcher_args(int argc, char** args, int joptsc, char** jopts) {
+JySetup* parse_launcher_args(int argc, char** args, int joptsc, char** jopts,
+		int jyoptsc, char** jyopts) {
 	JySetup* result = malloc(sizeof(JySetup));
 	result->boot = JNI_FALSE;
 	result->jdb = JNI_FALSE;
@@ -96,9 +102,10 @@ JySetup* parse_launcher_args(int argc, char** args, int joptsc, char** jopts) {
 	result->executableInArgs = JNI_FALSE;
 	result->ttyInArgs = JNI_FALSE;
 	result->consoleInArgs = JNI_FALSE;
+	result->file_encodingInArgs = JNI_FALSE;
 	result->propCount = 0;
 	result->javaCount = 0;
-	result->jythonCount = 0;
+	result->jythonCount = jyoptsc;
 	//result->propValues = NULL;
 	//result->propKeys = NULL;
 	result->properties = NULL;
@@ -136,6 +143,7 @@ JySetup* parse_launcher_args(int argc, char** args, int joptsc, char** jopts) {
 			checkProperty(jopts[i], homeOpt, result->pythonHomeInArgs)
 			checkProperty(jopts[i], ttyOpt, result->ttyInArgs)
 			checkProperty(jopts[i], consoleOpt, result->consoleInArgs)
+			checkProperty(jopts[i], file_encodingOpt, result->file_encodingInArgs)
 			result->propCount++;
 			jtmp[jtmpPos++] = jopts[i];
 		} else if (strcmp(jopts[i], "-classpath") == 0
@@ -242,6 +250,10 @@ JySetup* parse_launcher_args(int argc, char** args, int joptsc, char** jopts) {
 			setString0(result, java[javaPos], jtmp[i]);
 			javaPos++;
 		}
+	}
+	for (i = 0; i < jyoptsc; ++i) {
+		setString0(result, jython[jythonPos], jyopts[i]);
+		jythonPos++;
 	}
 	for (i = 0; i < tmpPos; ++i) {
 		if (strncmp(tmp[i], "-D", 2) == 0) {
@@ -861,11 +873,15 @@ int Jython_Main(int argc, char ** argv,         /* main argc, argc */
 //	puts("\n");
 	JySetup* setup;
 	{
-		int argc2;
-		char** args2 = NULL;
-		getJAVA_OPTS(&argc2, &args2);
-		setup = parse_launcher_args(argc, argv, argc2, args2);
-		if (args2) free(args2);
+		int jargc = 0;
+		char** jargs = NULL;
+		int jyargc = 0;
+		char** jyargs = NULL;
+		getOPTS(&jargc, &jargs, "JAVA_OPTS");
+		getOPTS(&jyargc, &jyargs, "JYTHON_OPTS");
+		setup = parse_launcher_args(argc, argv, jargc, jargs, jyargc, jyargs);
+		if (jargs) free(jargs);
+		if (jyargs) free(jyargs);
 	}
 	//printSetup(setup);
 //	if (setup->print_requested) {

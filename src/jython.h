@@ -32,9 +32,11 @@
 #define homeOpt "-Dpython.home="
 #define ttyOpt "-Dpython.launcher.tty="
 #define consoleOpt "-Dpython.console="
+#define file_encodingOpt "-Dfile.encoding="
 #define consoleOptVal "-Dpython.console=org.python.core.PlainConsole"
 #define defaultMem "-Xmx512m"
 #define defaultStack "-Xss1024k"
+#define defaultFile_encoding "-Dfile.encoding=UTF-8"
 
 #define checkProperty(checkSource, propertyDef, checkDest) \
 	if (strncmp(checkSource+2, propertyDef+2, sizeof(propertyDef)-3) == 0) { \
@@ -82,6 +84,7 @@ typedef struct {
 	jboolean executableInArgs;
 	jboolean ttyInArgs;
 	jboolean consoleInArgs;
+	jboolean file_encodingInArgs;
 	int propCount;
 	//char** propValues;
 	//char** propKeys;
@@ -97,7 +100,8 @@ typedef struct {
 	char* uname;
 } JySetup;
 
-JySetup* parse_launcher_args(int argc, char** args, int joptsc, char** jopts);
+JySetup* parse_launcher_args(int argc, char** args, int joptsc, char** jopts,
+		int jyoptsc, char** jyopts);
 void freeSetup(JySetup* setup);
 void printSetup(JySetup* js);
 void print_help();

@@ -28,7 +28,7 @@ Current state
 The launcher was not extensively tested yet, but supports almost all options and environment variables that jython.py supports. It is currently Linux-only, but a Windows-version is the next major goal. It has only been tested with Open JDK.
 
 What not yet works:
-Environment variables JYTHON_OPTS and JAVA_ENCODING are not yet parsed.
+Should emit error message if jython.jar (or related) is not found.
 
 
 
